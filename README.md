@@ -21,7 +21,7 @@ Viết bằng C# WinForms trên .NET Framework 4. Không cần cài thêm gì, k
 - Tìm theo âm Hán Việt, Nôm, Pinyin, Quảng Đông, Nhật, Hàn, theo nghĩa, theo mã hex, hoặc dán thẳng chữ vào.
 - Gõ có dấu hay không dấu đều được (`thiên` và `thien`). Có tuỳ chọn bắt buộc đúng dấu thanh.
 - Lọc riêng chữ Nôm thuần.
-- Dữ liệu Unihan và từ điển HVDic được nhúng sẵn nên tra offline được. Khi có mạng thì lấy thêm từ Thi Viện và Wiktionary.
+- Dữ liệu Unihan và từ điển HVDic được nhúng sẵn nên tra offline được. Khi có mạng thì lấy thêm từ Internet.
 
 Cú pháp tiền tố:
 
