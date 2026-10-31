@@ -134,15 +134,6 @@ bin\CJKPlayground.exe --test
 
 # Chạy chấm điểm quang học bộ ghép chữ IDS, xuất bảng contact_sheet.png
 bin\CJKPlayground.exe --benchmark
-```
-
-Hiện hệ thống sở hữu **122 bài kiểm thử tự động** (PASS 100%) thuộc 6 nhóm chuyên sâu:
-1. **`LinguisticTests` (17 tests):** Xử lý ngôn ngữ, chuẩn hóa dấu tiếng Việt, chuyển âm Kana/Hangul sang Latin.
-2. **`OpenTypeTests` (19 tests):** Bóc tách nhị phân cấu trúc bảng OpenType/TrueType (`cmap` format 4 & 12, `glyf`, `loca`, `hmtx`, `head`).
-3. **`HvDicTests` (11 tests):** Cơ sở dữ liệu từ điển Hán Nôm offline, tra cứu âm đọc và lọc chữ Nôm thuần.
-4. **`AutoBeautifyTests` (9 tests):** Thuật toán cân chỉnh quang học bố cục IDS và độ nét raster đa kích cỡ.
-5. **`FontInjectionTests` (11 tests):** Nạp glyph nhị phân vào font TTF, tái cấu trúc bảng và tính checksum.
-6. **`IllustratorToolsTests` (55 tests):** Bộ công cụ vector Illustrator, dao cắt nét, cắt Lasso, ghép nối nét Winding Rule, biến đổi multi-selection, scale 1 hướng Alt, điều chỉnh tracking và spacing vùng PUA.
 
 ---
 
