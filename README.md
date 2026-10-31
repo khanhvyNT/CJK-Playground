@@ -134,6 +134,7 @@ bin\CJKPlayground.exe --test
 
 # Chạy chấm điểm quang học bộ ghép chữ IDS, xuất bảng contact_sheet.png
 bin\CJKPlayground.exe --benchmark
+```
 
 ---
 
