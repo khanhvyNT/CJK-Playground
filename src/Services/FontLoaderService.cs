@@ -40,6 +40,7 @@ namespace CJKPlayground.Services
     public class FontLoaderService : IDisposable
     {
         private PrivateFontCollection _privateFonts = new PrivateFontCollection();
+        private IntPtr _lastFontBuffer = IntPtr.Zero;
         public LoadedFontInfo CurrentFont { get; private set; }
         public OpenTypeBinaryReader OpenTypeReader { get; private set; }
         public bool AutoCompositeEnabled { get; set; }
@@ -73,10 +74,18 @@ namespace CJKPlayground.Services
             }
             OpenTypeReader = new OpenTypeBinaryReader(filePath);
 
-            // 2. Load into GDI+ for standard raster fallback
+            // 2. Load into GDI+ for standard raster fallback via AddMemoryFont (no file lock)
             _privateFonts.Dispose();
+            if (_lastFontBuffer != IntPtr.Zero)
+            {
+                System.Runtime.InteropServices.Marshal.FreeCoTaskMem(_lastFontBuffer);
+                _lastFontBuffer = IntPtr.Zero;
+            }
+            byte[] fontBytes = File.ReadAllBytes(filePath);
+            _lastFontBuffer = System.Runtime.InteropServices.Marshal.AllocCoTaskMem(fontBytes.Length);
+            System.Runtime.InteropServices.Marshal.Copy(fontBytes, 0, _lastFontBuffer, fontBytes.Length);
             _privateFonts = new PrivateFontCollection();
-            _privateFonts.AddFontFile(filePath);
+            _privateFonts.AddMemoryFont(_lastFontBuffer, fontBytes.Length);
 
             FontFamily family = _privateFonts.Families.Length > 0 ? _privateFonts.Families[0] : FontFamily.GenericSerif;
             string familyName = !string.IsNullOrEmpty(OpenTypeReader.Header.FamilyName)

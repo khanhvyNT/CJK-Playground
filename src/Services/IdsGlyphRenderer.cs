@@ -612,6 +612,38 @@ namespace CJKPlayground.Services
             g.SetClip(clip, CombineMode.Intersect);
         }
 
+        public static GraphicsPath BuildCombinedVectorPath(List<GlyphRenderData> renderItems, FontFamily family)
+        {
+            var combined = new GraphicsPath();
+            if (renderItems == null || renderItems.Count == 0) return combined;
+
+            for (int i = 0; i < renderItems.Count; i++)
+            {
+                var item = renderItems[i];
+                if (item.Transform != null && !item.Transform.IsVisible) continue;
+
+                GraphicsPath compPath = item.VectorPath;
+                bool ownsPath = false;
+                if (compPath == null)
+                {
+                    compPath = CreateComponentVectorPath(item.Char, family, item.TargetRect, item.Transform);
+                    ownsPath = true;
+                }
+
+                if (compPath != null && compPath.PointCount > 0)
+                {
+                    combined.AddPath(compPath, false);
+                }
+
+                if (ownsPath && compPath != null)
+                {
+                    compPath.Dispose();
+                }
+            }
+
+            return combined;
+        }
+
         public static string ConvertGraphicsPathToSvg(GraphicsPath path)
         {
             if (path == null || path.PointCount == 0) return "";
@@ -703,15 +735,13 @@ namespace CJKPlayground.Services
             int idx = 0;
             foreach (var item in visibleItems)
             {
-                float dx = (float)Math.Round(item.StrokeDilationX, 1);
-                float dy = (float)Math.Round(item.StrokeDilationY, 1);
-                if (dx > 0.5f || dy > 0.5f)
+                if (item.StrokeDilationX > 0.5f || item.StrokeDilationY > 0.5f)
                 {
-                    sb.AppendFormat(CultureInfo.InvariantCulture,
-                        "    <filter id=\"filter_stroke_{0}\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"140%\">\n" +
-                        "      <feMorphology operator=\"dilate\" radius=\"{1:F1} {2:F1}\" in=\"SourceGraphic\" result=\"dilated\" />\n" +
-                        "      <feMerge><feMergeNode in=\"dilated\"/><feMergeNode in=\"SourceGraphic\"/></feMerge>\n" +
-                        "    </filter>\n", idx, dx, dy);
+                    float rx = Math.Max(0.5f, item.StrokeDilationX * 0.8f);
+                    float ry = Math.Max(0.5f, item.StrokeDilationY * 0.8f);
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "    <filter id=\"filter_stroke_{0}\">\n", idx);
+                    sb.AppendFormat(CultureInfo.InvariantCulture, "      <feMorphology operator=\"dilate\" radius=\"{0} {1}\" />\n", rx, ry);
+                    sb.AppendLine("    </filter>");
                 }
                 idx++;
             }
@@ -720,27 +750,32 @@ namespace CJKPlayground.Services
             idx = 0;
             foreach (var item in visibleItems)
             {
-                using (var path = CreateComponentVectorPath(item.Char, family, item.TargetRect, item.Transform))
+                GraphicsPath path = item.VectorPath;
+                bool ownsPath = false;
+                if (path == null)
+                {
+                    path = CreateComponentVectorPath(item.Char, family, item.TargetRect, item.Transform);
+                    ownsPath = true;
+                }
+                if (path != null)
                 {
                     string svgD = ConvertGraphicsPathToSvg(path);
                     string filterAttr = (item.StrokeDilationX > 0.5f || item.StrokeDilationY > 0.5f)
                         ? string.Format(" filter=\"url(#filter_stroke_{0})\"", idx)
                         : "";
-
-                    sb.AppendFormat("  <!-- Glyph: {0} -->\n", item.Char);
-                    sb.AppendFormat("  <g{0}>\n", filterAttr);
-                    string fillCol = (item.Transform != null && item.Transform.IsSubtractive)
-                        ? ((!string.IsNullOrEmpty(bgColor) && !bgColor.Equals("transparent", StringComparison.OrdinalIgnoreCase)) ? bgColor : "#ffffff")
-                        : inkColor;
-                    if (item.HasClearanceHalo && item.ClearanceHaloWidth > 0.5f)
+                    if (item.Transform != null && item.Transform.IsSubtractive)
                     {
-                        string haloCol = (!string.IsNullOrEmpty(bgColor) && !bgColor.Equals("transparent", StringComparison.OrdinalIgnoreCase)) ? bgColor : "#ffffff";
-                        sb.AppendFormat(CultureInfo.InvariantCulture,
-                            "    <path d=\"{0}\" stroke=\"{1}\" stroke-width=\"{2:F1}\" stroke-linejoin=\"round\" stroke-linecap=\"round\" fill=\"none\" />\n",
-                            svgD, haloCol, item.ClearanceHaloWidth);
+                        string fill = (!string.IsNullOrEmpty(bgColor) && !bgColor.Equals("transparent", StringComparison.OrdinalIgnoreCase)) ? bgColor : "#ffffff";
+                        sb.AppendFormat(CultureInfo.InvariantCulture, "  <path d=\"{0}\" fill=\"{1}\"{2} />\n", svgD, fill, filterAttr);
                     }
-                    sb.AppendFormat("    <path d=\"{0}\" fill=\"{1}\" fill-rule=\"evenodd\" shape-rendering=\"geometricPrecision\" />\n", svgD, fillCol);
-                    sb.AppendLine("  </g>");
+                    else
+                    {
+                        sb.AppendFormat(CultureInfo.InvariantCulture, "  <path d=\"{0}\" fill=\"{1}\"{2} />\n", svgD, inkColor, filterAttr);
+                    }
+                    if (ownsPath)
+                    {
+                        path.Dispose();
+                    }
                 }
                 idx++;
             }
@@ -754,7 +789,8 @@ namespace CJKPlayground.Services
             FontFamily family,
             int resolution,
             Color inkColor,
-            Color bgColor)
+            Color bgColor,
+            List<GraphicsPath> customStrokes = null)
         {
             var bmp = new Bitmap(resolution, resolution, PixelFormat.Format32bppArgb);
             using (var g = Graphics.FromImage(bmp))
@@ -796,10 +832,21 @@ namespace CJKPlayground.Services
 
                     foreach (var item in visibleItems)
                     {
-                        using (var path = CreateComponentVectorPath(item.Char, family, item.TargetRect, item.Transform))
+                        GraphicsPath path = item.VectorPath;
+                        bool ownsPath = false;
+                        if (path == null)
+                        {
+                            path = CreateComponentVectorPath(item.Char, family, item.TargetRect, item.Transform);
+                            ownsPath = true;
+                        }
+
+                        if (path != null)
                         {
                             var state = g.Save();
-                            ApplySliceClip(g, item.TargetRect, item.Transform.SliceMask);
+                            if (item.Transform != null && item.Transform.SliceMask != 0)
+                            {
+                                ApplySliceClip(g, item.TargetRect, item.Transform.SliceMask);
+                            }
 
                             if (item.HasClearanceHalo && item.ClearanceHaloWidth > 0.5f)
                             {
@@ -839,6 +886,39 @@ namespace CJKPlayground.Services
                                 g.FillPath(inkBrush, path);
                             }
                             g.Restore(state);
+
+                            if (ownsPath)
+                            {
+                                path.Dispose();
+                            }
+                        }
+                    }
+
+                    // Render custom drawn / severed vector strokes
+                    if (customStrokes != null && customStrokes.Count > 0)
+                    {
+                        using (var strokePen = new Pen(inkColor, 3.5f))
+                        {
+                            strokePen.StartCap = LineCap.Round;
+                            strokePen.EndCap = LineCap.Round;
+                            strokePen.LineJoin = LineJoin.Round;
+                            foreach (var p in customStrokes)
+                            {
+                                if (p == null || p.PointCount < 2) continue;
+                                using (var iter = new GraphicsPathIterator(p))
+                                {
+                                    bool isClosed;
+                                    using (var temp = new GraphicsPath())
+                                    {
+                                        iter.NextSubpath(temp, out isClosed);
+                                        if (isClosed)
+                                        {
+                                            g.FillPath(inkBrush, p);
+                                        }
+                                    }
+                                }
+                                g.DrawPath(strokePen, p);
+                            }
                         }
                     }
                 }

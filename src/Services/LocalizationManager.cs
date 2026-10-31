@@ -71,6 +71,8 @@ namespace CJKPlayground.Services
                 { "TabCharMap", "Bảng mã ký tự (Character Map)" },
                 { "TabSearch", "Tra cứu âm đọc & Từ điển Online" },
                 { "TabIds", "Ghép chữ IDS" },
+                { "TabFontTest", "Khu Vực Test Font" },
+                { "MenuFontTest", "Khu Vực Test Font (Font Sandbox)..." },
 
                 // Tab 1: Character Map
                 { "BlockTreeHeader", "Khối Unicode" },
@@ -299,6 +301,8 @@ namespace CJKPlayground.Services
                 { "TabCharMap", "Character Map" },
                 { "TabSearch", "Phonetic & Online Search" },
                 { "TabIds", "IDS Composer" },
+                { "TabFontTest", "Font Testing Area" },
+                { "MenuFontTest", "Font Testing Area (Font Sandbox)..." },
 
                 // Tab 1: Character Map
                 { "BlockTreeHeader", "Unicode Blocks" },

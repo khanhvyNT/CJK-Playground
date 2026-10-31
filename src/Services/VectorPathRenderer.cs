@@ -187,35 +187,107 @@ namespace CJKPlayground.Services
             return sb.ToString();
         }
 
-        public static GraphicsPath CreateGraphicsPath(RawGlyphOutline glyph, ushort unitsPerEm, short ascender, float targetSize)
+        /// <summary>
+        /// Tạo một GraphicsPath mượt mà từ RawGlyphOutline của TrueType bằng cách khôi phục chính xác
+        /// các đường cong Quadratic Bézier (chuyển đổi nâng bậc sang Cubic Bézier để GDI+ vẽ mượt mà).
+        /// </summary>
+        public static GraphicsPath CreateSmoothGraphicsPath(
+            RawGlyphOutline glyph, float originX, float originBaselineY, float scale)
         {
-            var gp = new GraphicsPath();
-            if (glyph == null || glyph.Contours.Count == 0 || unitsPerEm == 0)
+            var gp = new GraphicsPath { FillMode = FillMode.Winding };
+            if (glyph == null || glyph.Contours == null || glyph.Contours.Count == 0)
                 return gp;
-
-            float scale = targetSize / unitsPerEm;
 
             foreach (var contour in glyph.Contours)
             {
-                var points = ExpandContourPoints(contour);
-                if (points.Count == 0) continue;
+                if (contour.Count < 3) continue;
 
-                var poly = new List<PointF>();
-                foreach (var pt in points)
+                // 1. Chuyển đổi tọa độ sang màn hình (lật trục Y của Font: Font Y hướng lên => Màn hình Y hướng xuống)
+                var pts = new List<OutlinePoint>();
+                for (int i = 0; i < contour.Count; i++)
                 {
-                    float x = pt.X * scale;
-                    float y = (ascender - pt.Y) * scale;
-                    poly.Add(new PointF(x, y));
+                    var p = contour[i];
+                    int sx = (int)Math.Round(originX + (p.X * scale));
+                    int sy = (int)Math.Round(originBaselineY - (p.Y * scale));
+                    pts.Add(new OutlinePoint(sx, sy, p.OnCurve));
                 }
 
-                if (poly.Count >= 3)
+                // 2. Mở rộng các điểm nội suy ngầm (implicit on-curve midpoints) giữa 2 điểm off-curve liên tiếp
+                var expanded = new List<OutlinePoint>();
+                int n = pts.Count;
+                for (int i = 0; i < n; i++)
                 {
-                    gp.AddLines(poly.ToArray());
-                    gp.CloseFigure();
+                    var curr = pts[i];
+                    var next = pts[(i + 1) % n];
+                    expanded.Add(curr);
+                    if (!curr.OnCurve && !next.OnCurve)
+                    {
+                        expanded.Add(new OutlinePoint((curr.X + next.X) / 2, (curr.Y + next.Y) / 2, true));
+                    }
                 }
+
+                // 3. Tìm điểm on-curve đầu tiên làm mốc bắt đầu figure
+                int startIdx = 0;
+                while (startIdx < expanded.Count && !expanded[startIdx].OnCurve)
+                {
+                    startIdx++;
+                }
+                if (startIdx >= expanded.Count) continue;
+
+                PointF startP = new PointF(expanded[startIdx].X, expanded[startIdx].Y);
+                gp.StartFigure();
+
+                PointF currentP = startP;
+                int k = 1;
+                int total = expanded.Count;
+
+                while (k <= total)
+                {
+                    int idx = (startIdx + k) % total;
+                    var pt = expanded[idx];
+
+                    if (pt.OnCurve)
+                    {
+                        PointF nextP = new PointF(pt.X, pt.Y);
+                        gp.AddLine(currentP, nextP);
+                        currentP = nextP;
+                        k++;
+                    }
+                    else
+                    {
+                        // Điểm điều khiển bậc 2 (Quadratic control point)
+                        PointF ctrl = new PointF(pt.X, pt.Y);
+                        int nextIdx = (startIdx + k + 1) % total;
+                        var endPt = expanded[nextIdx];
+                        PointF nextP = new PointF(endPt.X, endPt.Y);
+
+                        // Nâng bậc từ Quadratic Bézier (currentP, ctrl, nextP) sang Cubic Bézier (currentP, c1, c2, nextP)
+                        PointF c1 = new PointF(
+                            currentP.X + (2f / 3f) * (ctrl.X - currentP.X),
+                            currentP.Y + (2f / 3f) * (ctrl.Y - currentP.Y));
+                        PointF c2 = new PointF(
+                            nextP.X + (2f / 3f) * (ctrl.X - nextP.X),
+                            nextP.Y + (2f / 3f) * (ctrl.Y - nextP.Y));
+
+                        gp.AddBezier(currentP, c1, c2, nextP);
+                        currentP = nextP;
+                        k += 2;
+                    }
+                }
+
+                gp.CloseFigure();
             }
 
             return gp;
+        }
+
+        public static GraphicsPath CreateGraphicsPath(RawGlyphOutline glyph, ushort unitsPerEm, short ascender, float targetSize)
+        {
+            if (glyph == null || glyph.Contours == null || glyph.Contours.Count == 0 || unitsPerEm == 0)
+                return new GraphicsPath();
+
+            float scale = targetSize / unitsPerEm;
+            return CreateSmoothGraphicsPath(glyph, 0f, ascender * scale, scale);
         }
     }
 }

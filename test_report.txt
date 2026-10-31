@@ -1,0 +1,164 @@
+﻿Kết quả kiểm thử ngôn ngữ học:
+Đã chạy: 17 bài test
+Thành công: 17
+Thất bại: 0
+
+Chi tiết:
+[PASS] stripVietnameseDiacritics
+[PASS] normalizeVietnameseTonePlacement
+[PASS] hangulToRomaja
+[PASS] stripPinyinTones
+[PASS] detectInputScript
+[PASS] kanaToRomaji
+[PASS] parseSearchQuery
+[PASS] searchByPronunciation ('thiên' & 'thien')
+[PASS] searchByPronunciation (Korean Romaja 'cheon')
+[PASS] searchByPronunciation ('trời' finds 𡗶 and 天)
+[PASS] pureNomOnly filter strictly rejects BMP
+[PASS] matchExact rejects prefix
+[PASS] targetLanguage 'vietnamese' includes Nom readings
+[PASS] languageFilter strictly isolates Japanese from Korean
+[PASS] pureNom strictly distinguishes ExtB Nom from BMP Hanzi
+[PASS] matchExactTone strictly rejects accented 'thiên' when searching unaccented 'thien'
+[PASS] matchCol isolation: Han-Viet only reading not returned when MatchColHanViet is false
+
+Kết quả kiểm thử OpenType Engine (Pha 2):
+Đã chạy: 19 bài test
+Thành công: 19
+Thất bại: 0
+
+Chi tiết:
+[PASS] VectorPathRenderer.BuildSvgPath (Linear)
+[PASS] VectorPathRenderer.BuildSvgPath (Quadratic Bézier)
+[PASS] VectorPathRenderer.CalculateInkBounds
+[PASS] OpenTypeBinaryReader.Header (head & maxp)
+[PASS] OpenTypeBinaryReader.SupportedCharacters (cmap)
+[PASS] OpenTypeBinaryReader.CmapFormat12 (Plane 2 / Ext B)
+[PASS] OpenTypeBinaryReader.GetGlyphOutline
+[PASS] IdsParserService.ParseIds (Binary)
+[PASS] IdsParserService.ParseIds (Ternary)
+[PASS] IdsParserService.ParseIds (Astral Plane / Chữ Nôm)
+[PASS] IdsParserService.SmartRadicals
+[PASS] IdsLayoutEngine.ComputeLayout
+[PASS] IdsPresetService.SamplePresets
+[PASS] IdsGlyphRenderer.GenerateFullSvg
+[PASS] IdsOpticalBeautifier.ValidateAstSanity (Layer 1)
+[PASS] IdsOpticalBeautifier.ExtractOpticalMetrics (Layer 2)
+[PASS] IdsOpticalBeautifier.SplitRatioAndInterlocking (Layers 3 & 4)
+[PASS] IdsOpticalBeautifier.EqualizeAndNormalize (Layer 5)
+[PASS] IdsOpticalBeautifier.AllOperatorsCoverage
+
+Kết quả kiểm thử HVDic Thi Viện Database (Nội bộ):
+Đã chạy: 11 bài test
+Thành công: 11
+Thất bại: 0
+
+Chi tiết:
+[PASS] HvDicDatabase.RecordCounts
+[PASS] HvDicDatabase.Lookup_Tian
+[PASS] HvDicDatabase.Lookup_Ming
+[PASS] HvDicDatabase.Lookup_Zi
+[PASS] HvDicDatabase.ScriptDistinction_Ai
+[PASS] HvDicDatabase.Search_HanViet_Exact
+[PASS] HvDicDatabase.Search_HanViet_Toneless
+[PASS] HvDicDatabase.Search_MatchExactTone_Strict
+[PASS] HvDicDatabase.Search_Pinyin
+[PASS] HvDicDatabase.PureNomOnly_Rejection
+[PASS] HvDicDatabase.FormattedDefinition
+
+
+Kết quả kiểm thử Bộ máy Ghép chữ IDS & Auto-Beautify (Win32 Native):
+Đã chạy: 9 bài test bắt buộc
+Thành công: 9
+Thất bại: 0
+
+Chi tiết:
+[PASS] AutoBeautify.Test1_QualityBenchmark
+[PASS] AutoBeautify.Test2_RealRasterInvariants
+[PASS] AutoBeautify.Test3_RenderMatch
+[PASS] AutoBeautify.Test4_Idempotence
+[PASS] AutoBeautify.Test5_HeldOutAndAblation
+[PASS] AutoBeautify.Test6_MutationTests
+[PASS] AutoBeautify.Test7_ExtendedLint
+[PASS] AutoBeautify.Test8_ReportVeracity
+[PASS] AutoBeautify.Test9_BeautifulIdsV2_FullSuite
+
+Kết quả kiểm thử Font Injection & Writer:
+Đã chạy: 11 bài test
+Thành công: 11
+Thất bại: 0
+
+Chi tiết:
+[PASS] VectorToGlyphConverter.ContoursCount
+[PASS] VectorToGlyphConverter.WindingNormalization
+[PASS] VectorToGlyphConverter.OverlappingStrokesPreservation
+[PASS] TrueTypeFontWriter.SerializeSimpleGlyph
+[PASS] TrueTypeFontWriter.BuildCmapTable
+[PASS] TrueTypeFontWriter.InjectGlyphs (Generated)
+[PASS] TrueTypeFontWriter.CheckSumAdjustment
+[PASS] RoundTrip.CmapDualSupport (BMP & Astral)
+[PASS] RoundTrip.OutlineRetrieval (BMP)
+[PASS] RoundTrip.OutlineRetrieval (Astral Plane 2)
+[PASS] TrueTypeFontWriter.GetCleanModifiedFontPath
+
+Kết quả kiểm thử Illustrator Tools & Undo/Redo Engine:
+Đã chạy: 55 bài test
+Thành công: 55
+Thất bại: 0
+
+Chi tiết:
+[PASS] UndoRedoManager.InitialState
+[PASS] UndoRedoManager.CanUndoAfterPush
+[PASS] UndoRedoManager.CurrentUndoAction
+[PASS] UndoRedoManager.UndoOperation
+[PASS] UndoRedoManager.CanRedoAfterUndo
+[PASS] UndoRedoManager.RedoOperation
+[PASS] UndoRedoManager.PostRedoState
+[PASS] UndoRedoManager.CapacityLimit
+[PASS] UndoRedoManager.NewestPreserved
+[PASS] UndoRedoManager.AstDeepCloning
+[PASS] VectorGeometry.IsPointInPolygon
+[PASS] VectorGeometry.IsBoundsInPolygon
+[PASS] VectorGeometry.LineSegmentsIntersect
+[PASS] VectorGeometry.TryCutStroke
+[PASS] VectorGeometry.AutoArrangeAndJoin
+[PASS] VectorGeometry.AutoArrangeAlignment
+[PASS] FontTestControl.FontSize190Supported
+[PASS] VectorGeometry.CountPointsInPolygonPrecision
+[PASS] VectorGeometry.IsPathInPolygonAndAnchorSelection
+[PASS] VectorGeometry.IsPathInPolygonDisjoint
+[PASS] VectorGeometry.RemoveAnchorPointsPrecision
+[PASS] VectorGeometry.ExtractAnchorPointsIsolation
+[PASS] VectorGeometry.TryCutCompoundPathIsolation
+[PASS] VectorGeometry.TryCutPolylineTrajectory
+[PASS] VectorGeometry.TryCutCompoundPathEncircledLoop
+[PASS] VectorGeometry.TryCutCompoundPathKnifeSlice
+[PASS] VectorGeometry.SelectionTransformerBounds
+[PASS] VectorGeometry.SelectionTransformerTranslation
+[PASS] VectorGeometry.SelectionTransformerScaleAndCancel
+[PASS] UndoRedoManager.ComponentVectorPathsRestoration
+[PASS] VectorGeometry.ShiftMultiSelectionAccumulation
+[PASS] VectorGeometry.SelectionTransformerToolModeIsolation
+[PASS] VectorGeometry.ExtractAnchorPointsMultiChunkValid
+[PASS] VectorGeometry.SelectionTransformerHitTestLassoIsolation
+[PASS] VectorGeometry.MultiAnchorTransformerBounds
+[PASS] VectorGeometry.LassoSingleClickFallbackThreshold
+[PASS] VectorGeometry.LassoActiveComponentPrioritization
+[PASS] VectorGeometry.DeletedComponentInvisibleIsolation
+[PASS] VectorGeometry.LassoOverDeletedAreaNoResurrection
+[PASS] VectorGeometry.KnifeCutIgnoresInvisibleComponent
+[PASS] VectorGeometry.MarqueeBoxSelectionIgnoresInvisible
+[PASS] MultiSelection.SingleSelect
+[PASS] MultiSelection.CtrlClickAdd
+[PASS] MultiSelection.CtrlClickRemove
+[PASS] MultiSelection.GroupBoundsCalculation
+[PASS] MultiSelection.GroupScaleCenter
+[PASS] MultiSelection.GroupScaleAltPinned
+[PASS] MultiSelection.GroupRotationOrbit
+[PASS] MultiSelection.AlignLeftMin
+[PASS] MultiSelection.DistributeGapCalculation
+[PASS] MultiSelection.BatchHideDelete
+[PASS] CustomVectorPath.SynchronousLockstepWithTargetRect
+[PASS] IdsLayoutEngine.SafeZoneRelaxationForCustomOffsets
+[PASS] ScaleSensitivity.NonExplosiveRatio
+[PASS] FontTest.TrackingAndPuaSpacingMetrics

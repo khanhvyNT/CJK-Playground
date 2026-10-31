@@ -32,7 +32,9 @@ namespace CJKPlayground.Models
         DirectSelect, // Direct Selection Tool (A)
         Pen,          // Pen Tool (P)
         Hand,         // Hand / Free Pan Tool (V / H)
-        Zoom          // Zoom Tool (Z)
+        Zoom,         // Zoom Tool (Z)
+        Lasso,        // Lasso Selection Tool (L)
+        LassoCut      // Lasso Cut / Knife Tool (C)
     }
 
     public enum BoundingHandle
@@ -209,6 +211,38 @@ namespace CJKPlayground.Models
         public byte EffectiveShapeClassId { get; set; }
 
         public bool IsOperator { get { return "operator".Equals(Type, StringComparison.OrdinalIgnoreCase); } }
+
+        public IdsNode Clone()
+        {
+            var node = new IdsNode
+            {
+                Id = this.Id,
+                Type = this.Type,
+                Operator = this.Operator,
+                Char = this.Char,
+                Transform = this.Transform != null ? this.Transform.Clone() : new NodeCustomTransform(),
+                HasTrailingTokens = this.HasTrailingTokens,
+                HasPlaceholders = this.HasPlaceholders,
+                EnclosureWarning = this.EnclosureWarning,
+                ConsumedTokens = this.ConsumedTokens,
+                TotalTokens = this.TotalTokens,
+                IsLiteralLocked = this.IsLiteralLocked,
+                RawCodePoint = this.RawCodePoint,
+                ResolvedCodePoint = this.ResolvedCodePoint,
+                CanonicalHash = this.CanonicalHash,
+                EffectiveStrokes = this.EffectiveStrokes,
+                EffectiveShapeClassId = this.EffectiveShapeClassId,
+                Children = new List<IdsNode>()
+            };
+            if (this.Children != null)
+            {
+                foreach (var c in this.Children)
+                {
+                    if (c != null) node.Children.Add(c.Clone());
+                }
+            }
+            return node;
+        }
 
         public IdsNode()
         {

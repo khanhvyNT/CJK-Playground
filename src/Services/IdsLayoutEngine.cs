@@ -81,11 +81,29 @@ namespace CJKPlayground.Services
 
                 var effectiveRect = new RectangleF(effectiveX, effectiveY, effectiveW, effectiveH);
 
-                // Khung an toàn tuyệt đối trong em-box [-15 .. 1015]
-                if (effectiveRect.X < -15f) effectiveRect.X = -15f;
-                if (effectiveRect.Y < -15f) effectiveRect.Y = -15f;
-                if (effectiveRect.Right > 1015f) effectiveRect.X = Math.Max(-15f, 1015f - effectiveRect.Width);
-                if (effectiveRect.Bottom > 1015f) effectiveRect.Y = Math.Max(-15f, 1015f - effectiveRect.Height);
+                // Khung an toàn:
+                // Nếu chưa can thiệp offset thủ công (customOffX == 0 && customOffY == 0),
+                // giới hạn trong em-box [-15 .. 1015] để chữ không tràn ra ngoài ô vuông mặc định.
+                // Nếu người dùng đã dịch chuyển hoặc kéo thả (customOffX != 0 || customOffY != 0),
+                // cho phép linh kiện di chuyển tự do trên không gian làm việc rộng [-2000 .. 3000].
+                // Khung an toàn:
+                // Auto-Beautify và căn lề em-box mặc định chỉ sử dụng offset vi chỉnh (<= 60px).
+                // Giới hạn trong [-15 .. 1015] để đảm bảo các bất biến raster chuẩn typographic không bị vượt biên.
+                // Khi người dùng chủ động kéo thả hoặc chỉnh offset lớn (> 60px), cho phép tự do di chuyển trên toàn canvas [-2000 .. 3000].
+                if (Math.Abs(customOffX) <= 60f && Math.Abs(customOffY) <= 60f)
+                {
+                    if (effectiveRect.X < -15f) effectiveRect.X = -15f;
+                    if (effectiveRect.Y < -15f) effectiveRect.Y = -15f;
+                    if (effectiveRect.Right > 1015f) effectiveRect.X = Math.Max(-15f, 1015f - effectiveRect.Width);
+                    if (effectiveRect.Bottom > 1015f) effectiveRect.Y = Math.Max(-15f, 1015f - effectiveRect.Height);
+                }
+                else
+                {
+                    if (effectiveRect.X < -2000f) effectiveRect.X = -2000f;
+                    if (effectiveRect.Y < -2000f) effectiveRect.Y = -2000f;
+                    if (effectiveRect.X > 3000f) effectiveRect.X = 3000f;
+                    if (effectiveRect.Y > 3000f) effectiveRect.Y = 3000f;
+                }
 
                 if (!node.IsOperator)
                 {

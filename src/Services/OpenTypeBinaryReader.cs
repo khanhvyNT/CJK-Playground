@@ -91,7 +91,10 @@ namespace CJKPlayground.Services
             if (!File.Exists(filePath))
                 throw new FileNotFoundException("Không tìm thấy tệp font: " + filePath);
 
-            _stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            // Đọc toàn bộ byte vào MemoryStream để giải phóng file handle trên đĩa ngay lập tức,
+            // tránh triệt để lỗi 'The process cannot access the file because it is being used by another process'.
+            byte[] fontData = File.ReadAllBytes(filePath);
+            _stream = new MemoryStream(fontData, false);
             _ownsStream = true;
             Header = new FontHeaderInfo();
             Parse();
@@ -616,6 +619,50 @@ namespace CJKPlayground.Services
                 leftSideBearing = ReadInt16BE();
             }
             _stream.Position = pos;
+        }
+
+        public Dictionary<string, TableRecord> GetTables()
+        {
+            return new Dictionary<string, TableRecord>(_tables);
+        }
+
+        public uint[] GetLocaOffsets()
+        {
+            return _locaOffsets != null ? (uint[])_locaOffsets.Clone() : new uint[0];
+        }
+
+        public Dictionary<int, ushort> GetAllCmapMappings()
+        {
+            return new Dictionary<int, ushort>(_cmap);
+        }
+
+        public byte[] ReadTableBytes(string tag)
+        {
+            TableRecord rec;
+            if (!_tables.TryGetValue(tag, out rec)) return null;
+            byte[] data = new byte[rec.Length];
+            long curPos = _stream.Position;
+            _stream.Position = rec.Offset;
+            int read = _stream.Read(data, 0, (int)rec.Length);
+            _stream.Position = curPos;
+            if (read < rec.Length) return null;
+            return data;
+        }
+
+        public byte[] ReadGlyphBytes(ushort gid)
+        {
+            if (_locaOffsets == null || gid >= _locaOffsets.Length - 1 || _glyfTableOffset == 0) return null;
+            uint start = _locaOffsets[gid];
+            uint end = _locaOffsets[gid + 1];
+            if (end <= start) return new byte[0];
+            uint len = end - start;
+            byte[] data = new byte[len];
+            long curPos = _stream.Position;
+            _stream.Position = _glyfTableOffset + start;
+            int read = _stream.Read(data, 0, (int)len);
+            _stream.Position = curPos;
+            if (read < len) return null;
+            return data;
         }
 
         public void Dispose()

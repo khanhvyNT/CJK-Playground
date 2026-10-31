@@ -32,11 +32,15 @@ namespace CJKPlayground
                 bool ok3 = HvDicTests.RunAllTests(out rep3);
                 string rep4;
                 bool ok4 = AutoBeautifyTests.RunAllTests(out rep4);
+                string rep5;
+                bool ok5 = FontInjectionTests.RunAllTests(out rep5);
+                string rep6;
+                bool ok6 = IllustratorToolsTests.RunAllTests(out rep6);
 
-                string fullReport = rep1 + "\n\n" + rep2 + "\n\n" + rep3 + "\n\n" + rep4;
+                string fullReport = rep1 + "\n\n" + rep2 + "\n\n" + rep3 + "\n\n" + rep4 + "\n\n" + rep5 + "\n\n" + rep6;
                 File.WriteAllText("test_report.txt", fullReport, System.Text.Encoding.UTF8);
                 Console.WriteLine(fullReport);
-                Environment.Exit((ok1 && ok2 && ok3 && ok4) ? 0 : 1);
+                Environment.Exit((ok1 && ok2 && ok3 && ok4 && ok5 && ok6) ? 0 : 1);
                 return;
             }
 

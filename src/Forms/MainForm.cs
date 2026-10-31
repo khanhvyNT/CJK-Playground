@@ -98,12 +98,19 @@ namespace CJKPlayground.Forms
         // Tab 3: IDS Composer Studio
         private IdsComposerControl _idsComposer;
 
+        // Tab 4: Font Testing Area
+        private FontTestControl _fontTestControl;
+        private ToolStripMenuItem _menuFontTest;
+
+        public static MainForm Instance { get; private set; }
+
         public MainForm() : this(null)
         {
         }
 
         public MainForm(Action<int, string> progress)
         {
+            Instance = this;
             var report = progress ?? ((p, m) => { });
 
             _settings = SettingsManager.Load();
@@ -267,6 +274,9 @@ namespace CJKPlayground.Forms
             _menuTools.DropDownItems.Add(_menuBasket);
             _menuTools.DropDownItems.Add(LocalizationManager.Get("MenuReport", "Báo cáo độ phủ font (Font Coverage Report)..."), null, OnOpenFontReportForm);
             _menuTools.DropDownItems.Add(new ToolStripSeparator());
+            _menuFontTest = new ToolStripMenuItem(LocalizationManager.Get("MenuFontTest", "Khu Vực Test Font (Font Sandbox)..."), null, (s, e) => SwitchToFontTestTab()) { ShortcutKeys = Keys.Control | Keys.T };
+            _menuTools.DropDownItems.Add(_menuFontTest);
+            _menuTools.DropDownItems.Add(new ToolStripSeparator());
             _menuAutoComposite = new ToolStripMenuItem(LocalizationManager.Get("MenuAutoComposite", "Tự động chọn Font hệ thống theo khối (Composite System Font)"), null, OnToggleAutoCompositeFont) { Checked = _settings.AutoCompositeFont };
             _menuTools.DropDownItems.Add(_menuAutoComposite);
 
@@ -311,6 +321,7 @@ namespace CJKPlayground.Forms
             _mainTabControl.TabPages.Add(CreateCharMapTab());
             _mainTabControl.TabPages.Add(CreateSearchTab());
             _mainTabControl.TabPages.Add(CreateIdsComposerTab());
+            _mainTabControl.TabPages.Add(CreateFontTestTab());
             _mainTabControl.SelectedIndexChanged += (s, e) =>
             {
                 UpdateWindowTitle();
@@ -434,6 +445,11 @@ namespace CJKPlayground.Forms
                 _txtSearchInput.SelectAll();
                 return true;
             }
+            if (keyData == (Keys.Control | Keys.T))
+            {
+                SwitchToFontTestTab();
+                return true;
+            }
             if (keyData == (Keys.Control | Keys.B))
             {
                 OnOpenBasketForm(null, EventArgs.Empty);
@@ -496,11 +512,12 @@ namespace CJKPlayground.Forms
             if (_menuLanguage != null) _menuLanguage.Text = LocalizationManager.Get("MenuLanguage");
             if (_menuHelp != null) _menuHelp.Text = LocalizationManager.Get("MenuHelp");
 
-            if (_mainTabControl != null && _mainTabControl.TabPages.Count >= 3)
+            if (_mainTabControl != null && _mainTabControl.TabPages.Count >= 4)
             {
                 _mainTabControl.TabPages[0].Text = LocalizationManager.Get("TabCharMap");
                 _mainTabControl.TabPages[1].Text = LocalizationManager.Get("TabSearch");
                 _mainTabControl.TabPages[2].Text = LocalizationManager.Get("TabIds");
+                _mainTabControl.TabPages[3].Text = LocalizationManager.Get("TabFontTest");
             }
 
             UpdateWindowTitle();
@@ -2222,6 +2239,29 @@ namespace CJKPlayground.Forms
             };
             tab.Controls.Add(_idsComposer);
             return tab;
+        }
+
+        private TabPage CreateFontTestTab()
+        {
+            var tab = new TabPage(LocalizationManager.Get("TabFontTest", "Khu Vực Test Font"));
+            _fontTestControl = new FontTestControl(_fontService)
+            {
+                Dock = DockStyle.Fill
+            };
+            tab.Controls.Add(_fontTestControl);
+            return tab;
+        }
+
+        public void SwitchToFontTestTab(string fontPath = null)
+        {
+            if (_mainTabControl != null && _mainTabControl.TabPages.Count >= 4)
+            {
+                _mainTabControl.SelectedIndex = 3;
+            }
+            if (!string.IsNullOrEmpty(fontPath) && _fontTestControl != null)
+            {
+                _fontTestControl.LoadFontFile(fontPath);
+            }
         }
         #endregion
 
